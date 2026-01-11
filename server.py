@@ -99,10 +99,12 @@ class SimpleHandler(BaseHTTPRequestHandler):
         print(f"[{self.log_date_time_string()}] {format % args}")
 
 if __name__ == '__main__':
-    server_address = ('', 8000)
+    # Railway 会提供 PORT 环境变量，本地开发使用 8000
+    port = int(os.environ.get('PORT', 8000))
+    server_address = ('', port)
     httpd = HTTPServer(server_address, SimpleHandler)
     print('🚀 服务器启动成功！')
-    print('📡 监听地址: http://localhost:8000')
-    print('📝 API 端点: POST http://localhost:8000/api/extract')
+    print(f'📡 监听地址: http://localhost:{port}')
+    print(f'📝 API 端点: POST http://localhost:{port}/api/extract')
     print('=' * 50)
     httpd.serve_forever()
