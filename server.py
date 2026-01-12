@@ -22,6 +22,22 @@ class SimpleHandler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass
 
+    def do_GET(self):
+        """处理 GET 请求（健康检查）"""
+        if self.path == '/' or self.path == '/health':
+            # Render 的健康检查端点
+            try:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                response = json.dumps({"status": "ok", "message": "AI Subtitle Extractor is running"})
+                self.wfile.write(response.encode('utf-8'))
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+        else:
+            self.send_error_response({"error": "Not Found"}, 404)
+
     def do_POST(self):
         """处理 POST 请求"""
         if self.path == '/api/extract':
