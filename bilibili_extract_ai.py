@@ -85,8 +85,11 @@ def extract_bilibili_subtitle_ai(url):
             ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
             print(json.dumps({"status": f"使用 imageio-ffmpeg: {ffmpeg_path}"}), file=sys.stderr)
 
-        # 使用 small 模型（约 500MB，准确度更高）
-        model = whisper.load_model("small")
+        # 使用 base 模型（约 140MB，适合免费部署）
+        # 如果是本地开发，可以改成 small 以获得更好的准确度
+        model_size = os.environ.get('WHISPER_MODEL', 'base')
+        print(json.dumps({"status": f"加载 Whisper {model_size} 模型..."}), file=sys.stderr)
+        model = whisper.load_model(model_size)
 
         # 转录音频
         result = model.transcribe(audio_file, language="zh", verbose=False)
