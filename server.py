@@ -99,12 +99,26 @@ class SimpleHandler(BaseHTTPRequestHandler):
         print(f"[{self.log_date_time_string()}] {format % args}")
 
 if __name__ == '__main__':
-    # Railway 会提供 PORT 环境变量，本地开发使用 8000
-    port = int(os.environ.get('PORT', 8000))
-    server_address = ('', port)
-    httpd = HTTPServer(server_address, SimpleHandler)
-    print('🚀 服务器启动成功！')
-    print(f'📡 监听地址: http://localhost:{port}')
-    print(f'📝 API 端点: POST http://localhost:{port}/api/extract')
-    print('=' * 50)
-    httpd.serve_forever()
+    try:
+        print('=' * 50, flush=True)
+        print('🔧 开始启动服务器...', flush=True)
+
+        # Railway 会提供 PORT 环境变量，本地开发使用 8000
+        port = int(os.environ.get('PORT', 8000))
+        print(f'📌 使用端口: {port}', flush=True)
+
+        server_address = ('', port)
+        print(f'📌 绑定地址: {server_address}', flush=True)
+
+        httpd = HTTPServer(server_address, SimpleHandler)
+        print('🚀 服务器启动成功！', flush=True)
+        print(f'📡 监听地址: http://localhost:{port}', flush=True)
+        print(f'📝 API 端点: POST http://localhost:{port}/api/extract', flush=True)
+        print('=' * 50, flush=True)
+
+        httpd.serve_forever()
+    except Exception as e:
+        print(f'❌ 服务器启动失败: {e}', flush=True)
+        import traceback
+        traceback.print_exc()
+        raise
