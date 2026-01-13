@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-B站视频 AI 字幕提取（使用 Whisper 语音识别）
+视频字幕提取（支持 B站、抖音、小红书）
+使用 Whisper 语音识别
 """
 
 import sys
@@ -9,17 +10,21 @@ import subprocess
 import tempfile
 import os
 
-def extract_bilibili_subtitle_ai(url):
-    """使用 AI 提取 B站视频字幕"""
+def extract_video_subtitle_ai(url):
+    """使用 AI 提取视频字幕（支持多平台）"""
 
     temp_dir = tempfile.gettempdir()
-    audio_file = os.path.join(temp_dir, "bilibili_audio.mp3")
+    audio_file = os.path.join(temp_dir, "video_audio.mp3")
 
     try:
+        # 检测平台
+        platform = detect_platform(url)
+        print(json.dumps({"status": f"检测到平台: {platform}"}), file=sys.stderr)
+
         # 步骤1: 获取视频信息
         print(json.dumps({"status": "获取视频信息..."}), file=sys.stderr)
         info_cmd = [
-            "yt-dlp",  # 使用系统 PATH 中的 yt-dlp
+            "yt-dlp",
             "--dump-json",
             "--no-download",
             url
@@ -39,9 +44,9 @@ def extract_bilibili_subtitle_ai(url):
 
         # 步骤2: 下载视频
         print(json.dumps({"status": "正在下载视频..."}), file=sys.stderr)
-        video_template = os.path.join(temp_dir, "bilibili_video.%(ext)s")
+        video_template = os.path.join(temp_dir, "video_download.%(ext)s")
         download_cmd = [
-            "yt-dlp",  # 使用系统 PATH 中的 yt-dlp
+            "yt-dlp",
             "--output", video_template,
             "--no-playlist",
             url
@@ -54,10 +59,10 @@ def extract_bilibili_subtitle_ai(url):
 
         # 查找实际下载的文件（优先选择音频文件）
         import glob
-        audio_files = glob.glob(os.path.join(temp_dir, "bilibili_video.*.m4a"))
+        audio_files = glob.glob(os.path.join(temp_dir, "video_download.*.m4a"))
         if not audio_files:
             # 如果没有音频文件，尝试查找视频文件
-            audio_files = glob.glob(os.path.join(temp_dir, "bilibili_video.*.mp4"))
+            audio_files = glob.glob(os.path.join(temp_dir, "video_download.*.mp4"))
 
         if not audio_files:
             print(json.dumps({"error": "找不到下载的音视频文件"}))
@@ -114,7 +119,7 @@ def extract_bilibili_subtitle_ai(url):
         response = {
             "title": title,
             "duration": duration,
-            "platform": "Bilibili",
+            "platform": platform,
             "thumbnail": thumbnail,
             "subtitles": subtitle_list,
             "summary": summary
@@ -127,6 +132,17 @@ def extract_bilibili_subtitle_ai(url):
         if os.path.exists(audio_file):
             os.remove(audio_file)
         print(json.dumps({"error": str(e)}, ensure_ascii=False))
+
+def detect_platform(url):
+    """检测视频平台"""
+    if 'bilibili.com' in url or 'b23.tv' in url:
+        return 'Bilibili'
+    elif 'douyin.com' in url:
+        return '抖音'
+    elif 'xiaohongshu.com' in url or 'xhslink.com' in url:
+        return '小红书'
+    else:
+        return '未知平台'
 
 def format_duration(seconds):
     """格式化时长"""
@@ -144,7 +160,7 @@ def format_timestamp(seconds):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(json.dumps({"error": "请提供 B站视频链接"}))
+        print(json.dumps({"error": "请提供视频链接"}))
         sys.exit(1)
 
-    extract_bilibili_subtitle_ai(sys.argv[1])
+    extract_video_subtitle_ai(sys.argv[1])
