@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ai-subtitle-extractor
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: PORT
+        generateValue: true
+      - key: WHISPER_MODEL
+        value: base
+      - key: PYTHON_VERSION
+        value: 3.9.0
